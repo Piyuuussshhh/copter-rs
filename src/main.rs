@@ -12,10 +12,11 @@ const WINDOW_HEIGHT: f32 = 720.0;
 const COPTER_SIZE: Vec2 = Vec2::new(50.0, 30.0);
 const OBSTACLE_SPAWN_TIME: f32 = 1.5;
 const GRAVITY: f32 = 800.0;
-const LIFT: f32 = 15000.0;
+const LIFT: f32 = 1800.0;
 const GAP_SIZE: f32 = 180.0;
 const OBSTACLE_WIDTH: f32 = 30.0;
 const OBSTACLE_SPEED: f32 = 400.0;
+const NEGATE_DELAY: f32 = 5.0;
 
 #[derive(Component)]
 struct Copter {
@@ -143,10 +144,10 @@ fn copter_movement(
     }
 
     if let Ok((mut copter, mut transform)) = copter_query.get_single_mut() {
-        copter.velocity -= GRAVITY * time.delta_secs();
+        copter.velocity -= GRAVITY * time.delta_secs() + NEGATE_DELAY;
 
         if mouse_input.pressed(MouseButton::Left) {
-            copter.velocity = LIFT * time.delta_secs();
+            copter.velocity += LIFT * time.delta_secs() + NEGATE_DELAY;
         }
 
         transform.translation.y += copter.velocity * time.delta_secs();
