@@ -15,7 +15,7 @@ const GRAVITY: f32 = 800.0;
 const LIFT: f32 = 15000.0;
 const GAP_SIZE: f32 = 180.0;
 const OBSTACLE_WIDTH: f32 = 30.0;
-const OBSTACLE_SPEED: f32 = 200.0;
+const OBSTACLE_SPEED: f32 = 400.0;
 
 #[derive(Component)]
 struct Copter {
@@ -31,7 +31,7 @@ struct ScoreText;
 // Resource for tracking game state
 #[derive(Resource)]
 struct GameState {
-    score: u32,
+    score: f32,
     game_over: bool,
     obstacle_timer: Timer,
 }
@@ -50,7 +50,7 @@ fn main() {
             ..Default::default()
         }))
         .insert_resource(GameState {
-            score: 0,
+            score: 0.0,
             game_over: false,
             obstacle_timer: Timer::new(
                 Duration::from_secs_f32(OBSTACLE_SPAWN_TIME),
@@ -100,31 +100,35 @@ fn setup(mut commands: Commands) {
 
     // TODO Score text.
     commands.spawn((
-        Text2d::new("Score: "),
+        Text::new("Score: 0"),
         TextFont {
             font_size: 30.0,
             ..Default::default()
         },
+        TextColor(Color::WHITE),
         TextLayout::new_with_justify(JustifyText::Center),
-    ));
-    commands.spawn((
-        Text2d::new("0"),
-        TextFont {
-            font_size: 30.0,
+        Node {
+            position_type: PositionType::Absolute,
+            bottom: Val::Px(5.0),
+            right: Val::Px(15.0),
             ..Default::default()
         },
-        TextLayout::new_with_justify(JustifyText::Center),
-        ScoreText,
+        ScoreText
     ));
 
     // TODO Instruction text.
     commands.spawn((
-        Text2d::new("Hold left click to fly up. Press R to restart when game over."),
+        Text::new("Hold left click to fly up. Press R to restart when game over."),
         TextFont {
             font_size: 30.0,
             ..Default::default()
         },
-        TextLayout::new_with_justify(JustifyText::Left),
+        TextLayout::new_with_justify(JustifyText::Center),
+        Node {
+            position_type: PositionType::Absolute,
+            top: Val::Px(5.0),
+            ..Default::default()
+        },
     ));
 }
 
@@ -228,9 +232,9 @@ fn collide(
     obstacle_pos: &Vec3,
     obstacle_size: &Vec2,
 ) -> bool {
-    if obstacle_pos.y - obstacle_size.y / 2.0 <= copter_pos.y
+    if copter_pos.x + copter_size.x >= obstacle_pos.x - obstacle_size.x / 2.0
+        && obstacle_pos.y - obstacle_size.y / 2.0 <= copter_pos.y
         && copter_pos.y <= obstacle_size.y / 2.0 + obstacle_pos.y
-        && copter_pos.x + copter_size.x >= obstacle_pos.x - obstacle_size.x / 2.0
     {
         return true;
     }
@@ -270,18 +274,17 @@ fn collision_detection(
 fn update_score(
     time: Res<Time>,
     mut game_state: ResMut<GameState>,
-    mut score_query: Query<&mut Text2d, With<ScoreText>>,
+    mut score_query: Query<(&mut Text, &Node), With<ScoreText>>,
 ) {
     if game_state.game_over {
         return;
     }
+    // println!("Time elapsed since last update: {}", time.delta_secs());
+    game_state.score += time.delta_secs();
 
-    game_state.score += (time.delta_secs() * 10.0) as u32;
-
-    // Highly inefficient I think but the only way I could come up w.
-    if let Ok(mut score_text) = score_query.get_single_mut() {
-        score_text.clear();
-        score_text.push_str(game_state.score.to_string().as_str());
+    if let Ok((mut score_text, _)) = score_query.get_single_mut() {
+        score_text.0 = format!("Score: {}", game_state.score as u32);
+        // println!("{}", score_text.0);
     }
 }
 
@@ -294,7 +297,7 @@ fn restart(
 ) {
     if game_state.game_over && keyboard_input.just_pressed(KeyCode::KeyR) {
         game_state.game_over = false;
-        game_state.score = 0;
+        game_state.score = 0.0;
 
         for entity in obstacle_query.iter() {
             commands.entity(entity).despawn();
