@@ -15,3 +15,7 @@ pub const OBSTACLE_SPAWN_TIME: f32 = 1.5;
 pub const OBSTACLE_HEIGHT: f32 = 250.0;
 pub const OBSTACLE_WIDTH: f32 = 100.0;
 pub const OBSTACLE_SPEED: f32 = 400.0;
+
+// Border Obstacle Settings
+pub const MIN_BORDER_HEIGHT: f32 = 75.0;
+pub const MAX_BORDER_HEIGHT: f32 = 200.0;

@@ -7,7 +7,7 @@ use crate::{
     systems::{
         collision::collision_detection,
         copter::copter_movement,
-        obstacles::{map_movement, spawn_obstacles},
+        obstacles::{map_movement, spawn_border, spawn_obstacles},
         ui::{setup_ui, update_score},
     },
 };
@@ -17,7 +17,7 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(GameState::default())
-            .add_systems(Startup, (setup_game, setup_ui))
+            .add_systems(Startup, (setup_game, setup_ui, spawn_border))
             .add_systems(
                 Update,
                 (
