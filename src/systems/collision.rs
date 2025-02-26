@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    components::{Copter, Obstacle},
+    components::{Border, Copter, Obstacle},
     constants::{COPTER_SIZE, WINDOW_HEIGHT},
     resources::GameState,
 };
@@ -43,6 +43,7 @@ pub fn collision_detection(
     mut game_state: ResMut<GameState>,
     copter_query: Query<&mut Transform, (With<Copter>, Without<Obstacle>)>,
     obstacle_query: Query<(&Transform, &Sprite), With<Obstacle>>,
+    border_query: Query<(&Transform, &Border), (Without<Obstacle>, Without<Copter>)>
 ) {
     if game_state.game_over {
         return;
@@ -61,10 +62,13 @@ pub fn collision_detection(
             }
         }
 
-        if copter_pos.y > WINDOW_HEIGHT / 2.0 - COPTER_SIZE.y / 2.0
-            || copter_pos.y < -WINDOW_HEIGHT / 2.0 + COPTER_SIZE.y / 2.0
-        {
-            game_state.game_over = true;
+        for (_, border) in border_query.iter() {
+            if copter_pos.y > WINDOW_HEIGHT * 0.5 - border.height as f32 - COPTER_SIZE.y * 0.5
+                || copter_pos.y < -WINDOW_HEIGHT * 0.5 + border.height as f32 + COPTER_SIZE.y * 0.5
+            {
+                game_state.game_over = true;
+                return;
+            }
         }
     }
 }
