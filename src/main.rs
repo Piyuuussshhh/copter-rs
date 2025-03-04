@@ -7,6 +7,7 @@ use game::GamePlugin;
 
 mod components;
 mod constants;
+mod enums;
 mod game;
 mod resources;
 mod systems;

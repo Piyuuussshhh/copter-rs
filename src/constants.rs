@@ -20,8 +20,8 @@ pub const OBSTACLE_SPEED: f32 = 600.0;
 pub const DEFAULT_BORDERTILE_HEIGHT: f32 = 75.0;
 pub const MIN_BORDERTILE_HEIGHT: f32 = 50.0;
 pub const MAX_BORDERTILE_HEIGHT: f32 = 125.0;
-pub const BORDERTILE_WIDTH: f32 = 64.0;             // Perfect multiple of WINDOW_WIDTH = 1024.0
-pub const BORDERTILE_SPEED: f32 = OBSTACLE_SPEED;            // IDK just to match
+pub const BORDERTILE_WIDTH: f32 = 64.0; // Perfect multiple of WINDOW_WIDTH = 1024.0
+pub const BORDERTILE_SPEED: f32 = OBSTACLE_SPEED; // IDK just to match
 pub const BORDERTILE_SPAWN_TIME: f32 = 0.3;
 
 // BorderTile Fluctuation Settings

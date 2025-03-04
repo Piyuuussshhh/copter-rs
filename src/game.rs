@@ -5,12 +5,10 @@ use crate::{
     constants::{COPTER_SIZE, WINDOW_HEIGHT, WINDOW_WIDTH},
     resources::{BorderTileCurrentHeight, BorderTileFluctuator, GameState},
     systems::{
+        bordertiles::{bordertile_movement, spawn_bordertiles, spawn_init_border},
         collision::collision_detection,
         copter::copter_movement,
-        obstacles::{
-            bordertile_movement, obstacle_movement, spawn_bordertiles, spawn_init_border,
-            spawn_obstacles,
-        },
+        obstacles::{obstacle_movement, spawn_obstacles},
         ui::{setup_ui, update_score},
     },
 };
@@ -85,7 +83,6 @@ fn restart(
         for entity in bordertile_query.iter() {
             commands.entity(entity).despawn();
         }
-
 
         // Important to respawn obstacles once gamer restarts.
         game_state.obstacle_timer.reset();

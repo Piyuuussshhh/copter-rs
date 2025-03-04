@@ -2,7 +2,10 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
-use crate::constants::{BORDERTILE_SPAWN_TIME, DEFAULT_BORDERTILE_HEIGHT, OBSTACLE_SPAWN_TIME};
+use crate::{
+    constants::{BORDERTILE_SPAWN_TIME, DEFAULT_BORDERTILE_HEIGHT, OBSTACLE_SPAWN_TIME},
+    enums::FluctuatingDirection,
+};
 
 // Resource for tracking game state
 #[derive(Resource)]
@@ -43,11 +46,6 @@ impl Default for BorderTileCurrentHeight {
             bottom_border: DEFAULT_BORDERTILE_HEIGHT,
         }
     }
-}
-
-pub enum FluctuatingDirection {
-    Up,
-    Down,
 }
 
 #[derive(Resource)]
