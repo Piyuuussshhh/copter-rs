@@ -12,6 +12,6 @@ pub struct Obstacle;
 pub struct ScoreText;
 
 #[derive(Component)]
-pub struct Border {
-    pub height: u32,
+pub struct BorderTile {
+    pub height: f32,
 }

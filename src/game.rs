@@ -1,13 +1,16 @@
 use bevy::prelude::*;
 
 use crate::{
-    components::{Copter, Obstacle},
+    components::{BorderTile, Copter, Obstacle},
     constants::{COPTER_SIZE, WINDOW_HEIGHT, WINDOW_WIDTH},
-    resources::GameState,
+    resources::{BorderTileCurrentHeight, BorderTileFluctuator, GameState},
     systems::{
         collision::collision_detection,
         copter::copter_movement,
-        obstacles::{map_movement, spawn_border, spawn_obstacles},
+        obstacles::{
+            bordertile_movement, obstacle_movement, spawn_bordertiles, spawn_init_border,
+            spawn_obstacles,
+        },
         ui::{setup_ui, update_score},
     },
 };
@@ -17,18 +20,23 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(GameState::default())
-            .add_systems(Startup, (setup_game, setup_ui, spawn_border))
+            .insert_resource(BorderTileCurrentHeight::default())
+            .insert_resource(BorderTileFluctuator::default())
+            .add_systems(Startup, (setup_game, setup_ui, spawn_init_border))
             .add_systems(
                 Update,
                 (
                     copter_movement,
                     spawn_obstacles,
-                    map_movement,
+                    spawn_bordertiles,
+                    obstacle_movement,
+                    bordertile_movement,
                     collision_detection,
                     update_score,
                     restart,
                 ),
-            );
+            )
+            .add_systems(FixedUpdate, (spawn_bordertiles,));
     }
 }
 
@@ -64,6 +72,7 @@ fn restart(
     mut game_state: ResMut<GameState>,
     mut commands: Commands,
     obstacle_query: Query<Entity, With<Obstacle>>,
+    bordertile_query: Query<Entity, With<BorderTile>>,
     mut copter_query: Query<(&mut Copter, &mut Transform)>,
 ) {
     if game_state.game_over && keyboard_input.just_pressed(KeyCode::KeyR) {
@@ -73,6 +82,10 @@ fn restart(
         for entity in obstacle_query.iter() {
             commands.entity(entity).despawn();
         }
+        for entity in bordertile_query.iter() {
+            commands.entity(entity).despawn();
+        }
+
 
         // Important to respawn obstacles once gamer restarts.
         game_state.obstacle_timer.reset();

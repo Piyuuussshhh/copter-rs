@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    components::{Border, Copter, Obstacle},
+    components::{BorderTile, Copter, Obstacle},
     constants::{COPTER_SIZE, WINDOW_HEIGHT},
     resources::GameState,
 };
@@ -20,8 +20,9 @@ use crate::{
         Take the middle point (obstacle_pos.y) of the obstacle and add
         half of the height (obstacle_size.y) to get the topmost point of the
         obstacle, and subtract it to get the lowest point.
-        Now, if the y-coordinate of the copter's position is in between these
-        points, then a collision is possible.
+        Now, if the y-coordinate of the top of the copter is touching the
+        bottom of an obstacle, or if the bottom of the copter is touching
+        the top of an obstacle, a collision has occurred.
 */
 
 fn collide(
@@ -31,8 +32,8 @@ fn collide(
     obstacle_size: &Vec2,
 ) -> bool {
     if (obstacle_pos.x - copter_pos.x).abs() < (copter_size.x + obstacle_size.x) * 0.5
-        && (obstacle_pos.y - obstacle_size.y * 0.5 <= copter_pos.y
-            && copter_pos.y <= obstacle_pos.y + obstacle_size.y * 0.5)
+        && (obstacle_pos.y - obstacle_size.y * 0.5 <= copter_pos.y + copter_size.y * 0.5
+            && copter_pos.y - copter_size.y * 0.5 <= obstacle_pos.y + obstacle_size.y * 0.5)
     {
         return true;
     }
@@ -43,7 +44,7 @@ pub fn collision_detection(
     mut game_state: ResMut<GameState>,
     copter_query: Query<&mut Transform, (With<Copter>, Without<Obstacle>)>,
     obstacle_query: Query<(&Transform, &Sprite), With<Obstacle>>,
-    border_query: Query<(&Transform, &Border), (Without<Obstacle>, Without<Copter>)>
+    bordertile_query: Query<(&Transform, &BorderTile), (Without<Obstacle>, Without<Copter>)>,
 ) {
     if game_state.game_over {
         return;
@@ -62,9 +63,18 @@ pub fn collision_detection(
             }
         }
 
-        for (_, border) in border_query.iter() {
-            if copter_pos.y > WINDOW_HEIGHT * 0.5 - border.height as f32 - COPTER_SIZE.y * 0.5
-                || copter_pos.y < -WINDOW_HEIGHT * 0.5 + border.height as f32 + COPTER_SIZE.y * 0.5
+        let copter_xaxis_range =
+            copter_pos.x - COPTER_SIZE.x * 0.5..=copter_pos.x + COPTER_SIZE.x * 0.5;
+
+        for (bordertile_transform, bordertile) in bordertile_query.iter() {
+            let is_top_bordertile = bordertile_transform.translation.y.is_sign_positive();
+            let colliding_with_top_bordertile = is_top_bordertile
+                && copter_pos.y > WINDOW_HEIGHT * 0.5 - bordertile.height - COPTER_SIZE.y * 0.5;
+            let colliding_with_bottom_bordertile = !is_top_bordertile
+                && copter_pos.y < -WINDOW_HEIGHT * 0.5 + bordertile.height + COPTER_SIZE.y * 0.5;
+
+            if copter_xaxis_range.contains(&bordertile_transform.translation.x)
+                && (colliding_with_top_bordertile || colliding_with_bottom_bordertile)
             {
                 game_state.game_over = true;
                 return;
